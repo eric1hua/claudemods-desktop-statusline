@@ -1,0 +1,6 @@
+{
+  "name": "desktop-statusline",
+  "version": "0.1.0",
+  "description": "Shows 5-hour and 7-day subscription usage as bars above the prompt",
+  "author": { "name": "eric1hua" }
+}

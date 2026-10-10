@@ -1,0 +1,16 @@
+{
+  "name": "claudemods-desktop-statusline",
+  "owner": {
+    "name": "eric1hua"
+  },
+  "metadata": {
+    "description": "Claude Code mods that bring best-cc-statusline into the app's interface"
+  },
+  "plugins": [
+    {
+      "name": "desktop-statusline",
+      "source": "./",
+      "description": "Shows 5-hour and 7-day subscription usage as bars above the prompt"
+    }
+  ]
+}
