@@ -41,12 +41,6 @@ function barSvg(percent: number, level: Level): string {
   )
 }
 
-// The terminal has no Svg: a 10-cell text bar, as the script draws
-function barText(percent: number): string {
-  const filled = Math.min(Math.max(Math.floor(percent / 10), 0), 10)
-  return '▓'.repeat(filled) + '░'.repeat(10 - filled)
-}
-
 // Time until a reset, relative so it reads the same in any time zone: 3d 4h, 2h 14m, 9m
 function untilReset(resetsAt: string | undefined, now: number): string | undefined {
   if (resetsAt === undefined) return undefined
@@ -74,7 +68,8 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    if (e.props.hasSurvey) return next(e)
+    // The terminal keeps its own status line: the band is for the Desktop app and the IDE
+    if (e.surface === 'terminal' || e.props.hasSurvey) return next(e)
 
     // Empty off a subscription (API-key billing) and before the first response
     const { rateLimits } = await $.session.usage()
@@ -86,10 +81,7 @@ export const register: Register = on => {
 
     const now = await $.clock.now()
     const isNarrow = e.props.bodyColumns < NARROW_COLUMNS
-    const elements = $.ui.resolve(e)
-    const { Box, Text } = elements
-    // Desktop draws an SVG bar; the terminal has no Svg and gets a text bar
-    const Svg = e.surface !== 'terminal' && 'Svg' in elements ? elements.Svg : undefined
+    const { Box, Svg, Text } = $.ui.resolve(e)
 
     return (
       <Box flexDirection="row" flexWrap="wrap" columnGap={3}>
@@ -97,15 +89,9 @@ export const register: Register = on => {
           const percent = Math.round(limit.percentUsed)
           const level = levelFor(percent)
           const reset = isNarrow ? undefined : untilReset(limit.resetsAt, now)
-          const bar =
-            Svg === undefined ? (
-              <Text color={TEXT_COLOR[level]}>{barText(percent)}</Text>
-            ) : (
-              <Svg source={barSvg(percent, level)} alt={`${label} usage ${percent}%`} width={96} height={8} />
-            )
           const parts = [
             <Text dimColor>{label}</Text>,
-            bar,
+            <Svg source={barSvg(percent, level)} alt={`${label} usage ${percent}%`} width={96} height={8} />,
             <Text color={TEXT_COLOR[level]} bold>{`${percent}%`}</Text>,
           ]
           if (reset !== undefined) parts.push(<Text dimColor>{`resets in ${reset}`}</Text>)

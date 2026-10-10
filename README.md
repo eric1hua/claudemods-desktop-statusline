@@ -1,12 +1,12 @@
 # desktop-statusline
 
-A Claude Code mod that shows your subscription usage as a band above the prompt, in the Desktop app's Code tab and in the terminal. It brings line 4 of [best-cc-statusline](https://github.com/eric1hua/best-cc-statusline) into the app's own interface.
+A Claude Code mod that shows your subscription usage as a band above the prompt in the Desktop app's Code tab (and the VS Code extension). The terminal is left alone: it keeps its own status line. It brings line 4 of [best-cc-statusline](https://github.com/eric1hua/best-cc-statusline) into the app's own interface.
 
 ```
 5h ━━━━━━──────── 42%  resets in 2h 14m      7d ━━━━━━━━━━━━── 91%  resets in 3d 4h
 ```
 
-- **Desktop / IDE:** rounded SVG bars. **Terminal:** text bars (`▓▓▓▓░░░░░░`).
+- Rounded SVG bars, one per window.
 - Green under 70%, yellow 70–89%, red 90% and up; percentages use your theme's colors.
 - Reset times are relative, so they read the same in any time zone.
 - Hidden when there is no rate-limit data (API-key billing, or before the first reply). Reset times drop below 60 columns.

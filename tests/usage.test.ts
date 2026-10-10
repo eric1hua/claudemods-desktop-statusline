@@ -28,19 +28,26 @@ const LIMITS: SessionRateLimit[] = [
 test('draws both windows with percent, threshold color and reset', async ($, on) => {
   mock.clock(on, { now: NOW })
   usageWith(on, LIMITS)
-  for (const surface of ['terminal', 'desktop'] as const) {
+  for (const surface of ['desktop', 'vscode'] as const) {
     const ui = await $.ui.mount({ plugin: 'desktop-statusline', surface, ...band() })
     expect((await ui.find({ type: 'Text', text: '42%' }))?.props).toMatchObject({ color: 'success' })
     expect((await ui.find({ type: 'Text', text: '91%' }))?.props).toMatchObject({ color: 'error' })
     expect(await ui.find({ text: 'resets in 2h 14m' })).toBeDefined()
     expect(await ui.find({ text: 'resets in 3d 4h' })).toBeDefined()
-    if (surface === 'desktop') {
-      expect(await ui.findAll({ type: 'Svg' })).toHaveLength(2)
-    } else {
-      expect(await ui.find({ text: '▓▓▓▓░░░░░░' })).toBeDefined()
-    }
+    expect(await ui.findAll({ type: 'Svg' })).toHaveLength(2)
     await ui.unmount()
   }
+})
+
+test('draws nothing in the terminal', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  usageWith(on, LIMITS)
+  // Stands for the engine's own band beneath the plugin
+  on('ui.render', ($, e) => $.ui.resolve(e).Box({ key: 'engine-band' }))
+  const ui = await $.ui.mount({ plugin: 'desktop-statusline', surface: 'terminal', ...band() })
+  expect(await ui.find({ key: 'engine-band' })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /5h|7d|%/ })).toBeUndefined()
+  await ui.unmount()
 })
 
 test('drops reset times at narrow widths', async ($, on) => {
@@ -67,10 +74,8 @@ test('draws nothing without rate-limit data (API-key billing)', async ($, on) =>
   usageWith(on, [])
   // Stands for the engine's own band beneath the plugin
   on('ui.render', ($, e) => $.ui.resolve(e).Box({ key: 'engine-band' }))
-  for (const surface of ['terminal', 'desktop'] as const) {
-    const ui = await $.ui.mount({ plugin: 'desktop-statusline', surface, ...band() })
-    expect(await ui.find({ key: 'engine-band' })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /5h|7d|%/ })).toBeUndefined()
-    await ui.unmount()
-  }
+  const ui = await $.ui.mount({ plugin: 'desktop-statusline', surface: 'desktop', ...band() })
+  expect(await ui.find({ key: 'engine-band' })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /5h|7d|%/ })).toBeUndefined()
+  await ui.unmount()
 })
